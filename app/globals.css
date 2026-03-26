@@ -394,7 +394,7 @@ body {
 
 .prank-highlight {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 200;
   text-align: center;
   margin-bottom: 16px;
   color: #00FF00;
@@ -489,6 +489,24 @@ body {
   cursor: pointer;
   border: none;
   transition: all 0.2s;
+}
+.adm-btn-large {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  align-self: center;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  width: 90%;
+  transition: all 0.2s;
+}
+
+.step-card-btn {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
 }
 
 .adm-btn-primary { background: #00ffcc; color: #050510; }

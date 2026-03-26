@@ -4,6 +4,7 @@ const LogSchema = new Schema({
   amount: { type: String, required: true },
   images: [{ type: String }], // Array of Base64 strings
   userId: { type: String },    // Added this to track who uploaded
+  status: { type: String, default: "Processing" },
   date: { type: Date, default: Date.now },
 });
 

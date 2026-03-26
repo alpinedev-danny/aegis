@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 
 export default function AdminDashboard() {
   const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [userIds, setUserIds] = useState<any[]>([]);
   const [newId, setNewId] = useState("");
-  const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
   useEffect(() => {
@@ -50,6 +50,12 @@ export default function AdminDashboard() {
     if (!confirm("Revoke access for this ID?")) return;
     await fetch(`/api/users?id=${id}`, { method: "DELETE" });
     setUserIds(userIds.filter(u => u._id !== id));
+  };
+
+  const HandleStatus = async (evt: any, status: string) => {
+    if (!confirm("Are you sure you want to update the status?")) return;
+    await fetch(`/api/upload?id=${evt._id}&status=${status}`, { method: "PATCH" });
+    fetchLogs();
   };
 
   return (
@@ -102,6 +108,7 @@ export default function AdminDashboard() {
               <tr>
                 <th>Timestamp</th>
                 <th>Amount</th>
+                <th>Status</th>
                 <th style={{ textAlign: "right" }}>Actions</th>
               </tr>
             </thead>
@@ -110,6 +117,28 @@ export default function AdminDashboard() {
                 <tr key={evt._id}>
                   <td>{new Date(evt.date).toLocaleString()}</td>
                   <td className="adm-text-neon" style={{ fontWeight: "bold" }}>{evt.amount}</td>
+                  {
+                    evt.status === "Approved" || evt.status === "Rejected" ? (
+                      <td className="adm-text-success">{evt.status}</td>
+                    ) : (
+                      <td>
+                    <button 
+                      onClick={() => HandleStatus(evt, "Approved")} 
+                      className="adm-btn adm-btn-primary" 
+                      style={{ padding: "0.4rem 0.8rem", marginRight: "0.5rem" }}
+                    >
+                      Approve
+                    </button>
+                    <button 
+                      onClick={() => HandleStatus(evt, "Rejected")} 
+                      className="adm-btn adm-btn-danger" 
+                      style={{ padding: "0.4rem 0.8rem" }}
+                    >
+                      Reject
+                    </button>
+                  </td>
+                    )
+                  }
                   <td style={{ textAlign: "right" }}>
                     <button 
                       onClick={() => setSelectedEvent(evt)} 

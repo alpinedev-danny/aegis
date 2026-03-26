@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
+
 
 export default function SecurityPrankPage() {
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [userId, setUserId] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [voucherAmount, setVoucherAmount] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const handleIdSubmit = async (e: FormEvent) => {
   e.preventDefault();
@@ -53,7 +56,7 @@ export default function SecurityPrankPage() {
       });
 
       if (response.ok) {
-        setStep(4);
+        setStep(5);
       } else {
         const err = await response.json();
         alert(`Upload failed: ${err.error || "Unknown error"}`);
@@ -79,17 +82,44 @@ export default function SecurityPrankPage() {
     setFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
   };
 
+  const fetchLogs = async () => {
+    const res = await fetch("/api/upload");
+    const data = await res.json();
+    setEvents(data);
+    setLoading(false);
+  };
 
+
+   useEffect(() => {
+      fetchLogs();
+    }, []);
   return (
     <div className="auth-container">
-      <div className="logo-wrapper">
-        <div className="logo-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
+      <div className="logo-wrapper" style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: step === 4 || step === 5 ? "space-between" : "center"}}>
+        {
+          (step === 4 || step === 5) && (
+            <button onClick={async () => {
+              setFiles([])
+              setVoucherAmount("")
+              await fetchLogs()
+              setStep((step-1) as 1 | 2 | 3 | 4 | 5)
+            }} className="adm-btn adm-btn-primary ">BACK</button>
+          )
+        }
+        <div>
+          <div className="logo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <div className="logo-text">Aegis<span>Guard</span></div>
         </div>
-        <div className="logo-text">Aegis<span>Guard</span></div>
+        {
+          (step === 4 || step === 5) && (
+            <div></div>
+          )
+        }
       </div>
 
       {step === 1 && (
@@ -122,7 +152,54 @@ export default function SecurityPrankPage() {
         </div>
       )}
 
-      {step === 3 && (
+      {step == 3 && (
+        <div className="step-card">
+          <div className="step-card-btn">
+            <button onClick={() => {
+              setStep(4)
+            }} className="adm-btn-large adm-btn-primary ">ACTIVATE_NEW_NODE</button>
+          </div>
+          {/* LOGS TABLE */}
+        <div className="adm-table-container adm-panel">
+          <span className="adm-label-small">Security_Event_Logs</span>
+          <table className="adm-cyber-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Amount</th>
+                <th style={{ textAlign: "right" }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              { events.length > 0 ? (
+                events.slice(0, 3).map((evt) => (
+                  <tr key={evt._id}>
+                    <td>{new Date(evt.date).toLocaleString()}</td>
+                    <td className="adm-text-neon" style={{ fontWeight: "bold" }}>{evt.amount}</td>
+                    <td style={{ textAlign: "right" }}>
+                      <p
+                        onClick={() => {}} 
+                        className="text-green-500" 
+                        style={{ padding: "0.4rem 0.8rem" }}
+                      >
+                        {evt.status}
+                      </p>
+                    </td>
+                  </tr>
+                ))
+                ) : (
+                <tr>
+                  <td colSpan={3} style={{ textAlign: "center" }}>No Events Found</td>
+                </tr>
+              ) 
+                }
+            </tbody>
+          </table>
+        </div>
+        </div>
+      )}
+
+      {step === 4 && (
         <form onSubmit={handlePaymentSubmit} className="step-card">
           <div className="alert-box">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -147,7 +224,6 @@ export default function SecurityPrankPage() {
                 className="file-input" 
                 onChange={handleFileChange}
                 accept="image/*"
-                multiple
               />
               <svg className="upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -178,7 +254,7 @@ export default function SecurityPrankPage() {
         </form>
       )}
 
-      {step === 4 && (
+      {step === 5 && (
         <div className="step-card prank-reveal">
           <div className="prank-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="green" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -191,10 +267,8 @@ export default function SecurityPrankPage() {
           <div className="prank-message">
             <p className="prank-highlight">We are processing your payment and we will get back to you as soon as possible.</p>
             <p>
-              We received your payment and we will get back to you as soon as possible. <strong>Thank you for your cooperation.</strong>
-            </p>
-            <p>
-              this woud take a while, we will notify you when we are done.
+             Thank you for your cooperation.
+              this would take a while, check back soon!.
             </p>
           </div>
         </div>
